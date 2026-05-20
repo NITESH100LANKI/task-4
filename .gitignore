@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Large project datasets and models
+CineMind-AI/data/raw/tmdb/*.csv
+CineMind-AI/data/processed/*.parquet
+CineMind-AI/models/*.pkl
+CineMind-AI/cache/
+CineMind-AI/embeddings/
+CineMind-AI/vector_store/
+CineMind-AI/visualizations/*.png
+CineMind-AI/visualizations/*.jpg
+CineMind-AI/visualizations/*.pdf
