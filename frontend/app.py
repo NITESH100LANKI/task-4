@@ -255,21 +255,37 @@ if page == "Movie Recommendation Hub":
         
         try:
             with st.spinner("Processing TF-IDF weights and computing cosine similarity..."):
-                res = requests.post(f"{API_URL}/recommend", json=payload)
-                if res.status_code == 200:
-                    recs = res.json().get("recommendations", [])
-                    if recs:
-                        st.markdown(f"<h3 style='color: #4f46e5; margin-bottom: 20px;'>Found {len(recs)} relevant matches:</h3>", unsafe_allow_html=True)
-                        cols = st.columns(5)
-                        for idx, rec in enumerate(recs):
-                            with cols[idx % 5]:
-                                display_movie_card(rec)
+                recs = []
+                try:
+                    res = requests.post(f"{API_URL}/recommend", json=payload, timeout=2.0)
+                    if res.status_code == 200:
+                        recs = res.json().get("recommendations", [])
                     else:
-                        st.warning("No matches found. Try modifying your keywords.")
-                else:
-                    st.error(f"Engine Error: {res.json().get('detail', 'Unknown error')}")
+                        raise Exception(f"Status code {res.status_code}")
+                except Exception as api_err:
+                    # Fallback to local model execution if API is offline
+                    try:
+                        from src.models.recommenders import ContentBasedRecommender
+                        cb_model = ContentBasedRecommender.load()
+                        recs = cb_model.recommend(query, 10)
+                        # Add a note that we are running on local fallback
+                        for r in recs:
+                            r['explanation'] = "Local Fallback Model"
+                    except Exception as local_err:
+                        st.error(f"Engine Offline: Could not connect to API ({api_err}) and failed to load local model ({local_err})")
+                        recs = []
+
+                if recs:
+                    st.markdown(f"<h3 style='color: #4f46e5; margin-bottom: 20px;'>Found {len(recs)} relevant matches:</h3>", unsafe_allow_html=True)
+                    cols = st.columns(5)
+                    for idx, rec in enumerate(recs):
+                        with cols[idx % 5]:
+                            display_movie_card(rec)
+                elif not recs and "api_err" not in locals() and "local_err" not in locals():
+                    st.warning("No matches found. Try modifying your keywords.")
         except Exception as e:
-            st.error(f"Engine Offline: {e}")
+            st.error(f"Unexpected error: {e}")
+
 
 elif page == "Database Telemetry":
     st.header("📊 Local Metadata & System Telemetry")
