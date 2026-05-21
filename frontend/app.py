@@ -169,7 +169,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-API_URL = "http://localhost:8000"
+import os
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+
 
 st.markdown("<h1 style='text-align: center; font-weight: 800; margin-top: 20px; background: -webkit-linear-gradient(45deg, #6366f1, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>CineMind AI Engine</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #475569; margin-bottom: 40px;'>Lightweight, High-Performance Local TF-IDF & Cosine Similarity Movie Recommendation Engine</p>", unsafe_allow_html=True)
